@@ -2,9 +2,7 @@ package proxy
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -17,7 +15,7 @@ var uriBackEnd string = "https://faulty-backend.herokuapp.com/on_comment"
 
 func PostComment(comment model.CommentToPost) {
 	client := &http.Client{
-		Timeout: 3 * time.Second,
+		Timeout: 12 * time.Second,
 	}
 
 	jsonReq, err := json.Marshal(comment)
@@ -33,26 +31,17 @@ func PostComment(comment model.CommentToPost) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		if errors.Is(err, context.DeadlineExceeded) {
-			fmt.Println("contextDeadLine: true")
-		}
+		// If timeout then redo request
 		if os.IsTimeout(err) {
-			fmt.Println("IsTimeoutError: true")
+			PostComment(comment)
 		}
-		fmt.Println(err)
+		return
 	}
 
-	for resp.StatusCode != 200 {
-		resp, err = client.Do(req)
-		fmt.Println("pause")
-		if err != nil {
-			fmt.Println(err)
-		}
-		fmt.Println(resp.StatusCode)
-	}
-
+	// If tea poted
 	if resp.StatusCode == 418 {
-		fmt.Println("Tea poted")
+		PostComment(comment)
+		return
 	}
 	fmt.Println(resp.StatusCode)
 
