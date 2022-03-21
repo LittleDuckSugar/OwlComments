@@ -37,7 +37,7 @@ func PostComment(c *gin.Context) {
 		c.String(http.StatusBadRequest, "")
 	} else {
 		// TODO : Should saves to the other backend (do not wait for it to be display on local)
-		proxy.PostComment(model.CommentToPost{Message: input.TextEn, Author: input.AuthorId})
+		go proxy.PostComment(model.CommentToPost{Message: input.TextEn, Author: input.AuthorId})
 		c.JSON(http.StatusCreated, input)
 	}
 }
