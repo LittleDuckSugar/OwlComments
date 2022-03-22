@@ -36,7 +36,17 @@ func PostComment(c *gin.Context) {
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.String(http.StatusBadRequest, "")
 	} else {
-		// TODO : Should saves to the other backend (do not wait for it to be display on local)
+
+		// Convertion of comments
+		if input.TextEn == "" {
+			// Convert fr to en
+			input.TextEn = proxy.PostTradution(model.Traduction{TextToTrad: input.TextFr, Source: "fr", Target: "en"})
+		} else if input.TextFr == "" {
+			// Convert en to fr
+			input.TextFr = proxy.PostTradution(model.Traduction{TextToTrad: input.TextEn, Source: "en", Target: "fr"})
+		}
+
+		// Send comment to faultybackend
 		go proxy.PostComment(model.CommentToPost{Message: input.TextEn, Author: input.AuthorId})
 		c.JSON(http.StatusCreated, input)
 	}
