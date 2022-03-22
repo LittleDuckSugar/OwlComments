@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
 	"owlcomments/model"
 	"owlcomments/proxy"
@@ -8,6 +9,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 )
+
+var fakeTargets []string = []string{"Photos-1234", "Profil-4567", "Comment-kjh784fgevdhhdwhh7563"}
 
 // GetComments return an array of comments matching an targetId
 func GetComments(c *gin.Context) {
@@ -29,25 +32,44 @@ func GetComments(c *gin.Context) {
 // PostComment save in the db the comment and
 func PostComment(c *gin.Context) {
 
-	// targetId := c.Params.ByName("targetId")
+	targetId := c.Params.ByName("targetId")
 
-	// Validate input
-	var input model.NewComment
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.String(http.StatusBadRequest, "")
-	} else {
+	// Does the asked target exist ?
+	for _, target := range fakeTargets {
+		if target == targetId {
+			fmt.Println("Allowed to post")
 
-		// Convertion of comments
-		if input.TextEn == "" {
-			// Convert fr to en
-			input.TextEn = proxy.PostTradution(model.Traduction{TextToTrad: input.TextFr, Source: "fr", Target: "en"})
-		} else if input.TextFr == "" {
-			// Convert en to fr
-			input.TextFr = proxy.PostTradution(model.Traduction{TextToTrad: input.TextEn, Source: "en", Target: "fr"})
+			// Validate input
+			var input model.NewComment
+			if err := c.ShouldBindJSON(&input); err != nil {
+				c.String(http.StatusBadRequest, "")
+			} else {
+
+				if targetId == input.TargetId {
+					// Convertion of comments
+					if input.TextEn == "" {
+						// Convert fr to en
+						input.TextEn = proxy.PostTradution(model.Traduction{TextToTrad: input.TextFr, Source: "fr", Target: "en"})
+					} else if input.TextFr == "" {
+						// Convert en to fr
+						input.TextFr = proxy.PostTradution(model.Traduction{TextToTrad: input.TextEn, Source: "en", Target: "fr"})
+					}
+
+					// Send comment to faultybackend
+					go proxy.PostComment(model.CommentToPost{Message: input.TextEn, Author: input.AuthorId})
+
+					// Should save the whole comment in the database
+					repository.PostComment(input)
+
+					c.JSON(http.StatusCreated, input)
+				} else {
+					fmt.Println("targetId is not the same in the path than in the request")
+				}
+			}
+			return
 		}
-
-		// Send comment to faultybackend
-		go proxy.PostComment(model.CommentToPost{Message: input.TextEn, Author: input.AuthorId})
-		c.JSON(http.StatusCreated, input)
 	}
+
+	fmt.Println("No matching targets")
+
 }
