@@ -11,9 +11,10 @@ type Comment struct {
 }
 
 type NewComment struct {
-	TextFr      string `json:"textFr"`
-	TextEn      string `json:"textEn"`
-	PublishedAt string `json:"publishedAt" binding:"required"`
-	AuthorId    string `json:"authorId" binding:"required"`
-	TargetId    string `json:"targetId" binding:"required"`
+	Id          string `json:"id" binding:"required" bson:"id"`
+	TextFr      string `json:"textFr" bson:"textFr"`
+	TextEn      string `json:"textEn" bson:"textEn"`
+	PublishedAt string `json:"publishedAt" binding:"required" bson:"publishedAt"`
+	AuthorId    string `json:"authorId" binding:"required" bson:"authorId"`
+	TargetId    string `json:"targetId" binding:"required" bson:"targetId"`
 }
