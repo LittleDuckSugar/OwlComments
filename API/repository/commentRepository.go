@@ -7,6 +7,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
@@ -17,8 +18,19 @@ const UriDB string = "mongodb+srv://" + dbUsername + ":" + dbUserPassword + "@te
 
 var Client *mongo.Client
 
+func init() {
+	// Init the db connection
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(UriDB))
+
+	if err != nil {
+		panic(err)
+	}
+
+	Client = client
+}
+
 // GetTarget return true if target exist, return false instead
-func GetByTarget(targetId string) (bool, model.Comment) {
+func GetCommentByTargetId(targetId string) (bool, model.Comment) {
 
 	pingDB()
 
@@ -34,11 +46,13 @@ func GetByTarget(targetId string) (bool, model.Comment) {
 		panic(err)
 	}
 
+	result.Replies = getReplies(result.Id)
+
 	return true, result
 }
 
-// GetTarget return true if target exist, return false instead
-func GetReplies(Id string) (bool, []model.Comment) {
+// getReplies return replies of a given Id
+func getReplies(Id string) []model.Comment {
 
 	pingDB()
 
@@ -48,7 +62,7 @@ func GetReplies(Id string) (bool, []model.Comment) {
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			// This error means your query did not match any documents.
-			return false, []model.Comment{}
+			return []model.Comment{}
 		}
 		panic(err)
 	}
@@ -59,7 +73,11 @@ func GetReplies(Id string) (bool, []model.Comment) {
 		panic(err)
 	}
 
-	return true, results
+	for pos, comment := range results {
+		results[pos].Replies = getReplies(comment.Id)
+	}
+
+	return results
 }
 
 // PostComment post to the db a new comment
