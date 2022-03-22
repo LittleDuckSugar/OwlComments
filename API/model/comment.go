@@ -11,8 +11,8 @@ type Comment struct {
 }
 
 type NewComment struct {
-	TextFr      string `json:"textFr" binding:"required"`
-	TextEn      string `json:"textEn" binding:"required"`
+	TextFr      string `json:"textFr"`
+	TextEn      string `json:"textEn"`
 	PublishedAt string `json:"publishedAt" binding:"required"`
 	AuthorId    string `json:"authorId" binding:"required"`
 	TargetId    string `json:"targetId" binding:"required"`
