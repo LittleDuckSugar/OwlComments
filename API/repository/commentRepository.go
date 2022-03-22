@@ -102,3 +102,33 @@ func pingDB() {
 	}
 	fmt.Println("Successfully connected and pinged.")
 }
+
+// UpdateFakeTargets return a list of available targetId already available in the db
+func UpdateFakeTargets() []string {
+	pingDB()
+
+	coll := Client.Database("owlint").Collection("comment")
+
+	cursor, err := coll.Find(context.TODO(), bson.D{{}})
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			// This error means your query did not match any documents.
+			return []string{}
+		}
+		panic(err)
+	}
+
+	var results []model.Comment
+
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		panic(err)
+	}
+
+	updatedFakeTargets := []string{}
+
+	for _, comment := range results {
+		updatedFakeTargets = append(updatedFakeTargets, comment.Id)
+	}
+
+	return updatedFakeTargets
+}

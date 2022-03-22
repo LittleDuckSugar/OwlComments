@@ -14,7 +14,7 @@ import (
 	"github.com/rs/xid"
 )
 
-var fakeTargets []string = []string{"Photos-1234", "Profil-4567", "Comment-kjh784fgevdhhdwhh7563", "Comment-5678efgh", "Comment-c8t3oian3s3a0u64l8ag", "Comment-c8t3q4qn3s3a9jlfj4mg"}
+var fakeTargets []string = []string{}
 
 // GetComments return an array of comments matching an targetId
 func GetComments(c *gin.Context) {
@@ -32,6 +32,8 @@ func GetComments(c *gin.Context) {
 func PostComment(c *gin.Context) {
 
 	targetId := c.Params.ByName("targetId")
+
+	fakeTargets = repository.UpdateFakeTargets()
 
 	// Does the asked target exist ?
 	for _, target := range fakeTargets {
