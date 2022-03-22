@@ -6,23 +6,22 @@ import (
 	"owlcomments/model"
 	"owlcomments/proxy"
 	"owlcomments/repository"
+	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
+
+	"github.com/rs/xid"
 )
 
-var fakeTargets []string = []string{"Photos-1234", "Profil-4567", "Comment-kjh784fgevdhhdwhh7563"}
+var fakeTargets []string = []string{"Photos-1234", "Profil-4567", "Comment-kjh784fgevdhhdwhh7563", "Comment-5678efgh", "Comment-c8t3oian3s3a0u64l8ag", "Comment-c8t3q4qn3s3a9jlfj4mg"}
 
 // GetComments return an array of comments matching an targetId
 func GetComments(c *gin.Context) {
 	targetId := c.Params.ByName("targetId")
 
-	// if targetId not found in db
-	if found, comment := repository.GetByTarget(targetId); found {
-		if found, commentsReplies := repository.GetReplies(comment.Id); found {
-			comment.Replies = commentsReplies
-		} else {
-			comment.Replies = make([]model.Comment, 0)
-		}
+	// if targetId found in db
+	if found, comment := repository.GetCommentByTargetId(targetId); found {
 		c.JSON(http.StatusOK, comment)
 	} else {
 		c.String(http.StatusNotFound, "")
@@ -37,7 +36,6 @@ func PostComment(c *gin.Context) {
 	// Does the asked target exist ?
 	for _, target := range fakeTargets {
 		if target == targetId {
-			fmt.Println("Allowed to post")
 
 			// Validate input
 			var input model.NewComment
@@ -46,19 +44,27 @@ func PostComment(c *gin.Context) {
 			} else {
 
 				if targetId == input.TargetId {
-					// Convertion of comments
+					// Traduction of comments
 					if input.TextEn == "" {
-						// Convert fr to en
+						// Traduction fr to en
 						input.TextEn = proxy.PostTradution(model.Traduction{TextToTrad: input.TextFr, Source: "fr", Target: "en"})
 					} else if input.TextFr == "" {
-						// Convert en to fr
+						// Traduction en to fr
 						input.TextFr = proxy.PostTradution(model.Traduction{TextToTrad: input.TextEn, Source: "en", Target: "fr"})
 					}
+
+					// Save the PublishedAt attributes if none where provided
+					if input.PublishedAt == "" {
+						input.PublishedAt = strconv.FormatInt(time.Now().UTC().Unix(), 10)
+					}
+
+					// Generate id of the comment
+					input.Id = "Comment-" + xid.New().String()
 
 					// Send comment to faultybackend
 					go proxy.PostComment(model.CommentToPost{Message: input.TextEn, Author: input.AuthorId})
 
-					// Should save the whole comment in the database
+					// Saving into db
 					repository.PostComment(input)
 
 					c.JSON(http.StatusCreated, input)
