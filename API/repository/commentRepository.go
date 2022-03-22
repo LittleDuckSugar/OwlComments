@@ -17,16 +17,10 @@ const UriDB string = "mongodb+srv://" + dbUsername + ":" + dbUserPassword + "@te
 
 var Client *mongo.Client
 
-// Should control db from here
-
 // GetTarget return true if target exist, return false instead
 func GetByTarget(targetId string) (bool, model.Comment) {
 
-	// Ping the primary
-	if err := Client.Ping(context.TODO(), readpref.Primary()); err != nil {
-		panic(err)
-	}
-	fmt.Println("Successfully connected and pinged.")
+	pingDB()
 
 	coll := Client.Database("owlint").Collection("comment")
 
@@ -46,11 +40,7 @@ func GetByTarget(targetId string) (bool, model.Comment) {
 // GetTarget return true if target exist, return false instead
 func GetReplies(Id string) (bool, []model.Comment) {
 
-	// Ping the primary
-	if err := Client.Ping(context.TODO(), readpref.Primary()); err != nil {
-		panic(err)
-	}
-	fmt.Println("Successfully connected and pinged.")
+	pingDB()
 
 	coll := Client.Database("owlint").Collection("comment")
 
@@ -70,4 +60,27 @@ func GetReplies(Id string) (bool, []model.Comment) {
 	}
 
 	return true, results
+}
+
+// PostComment post to the db a new comment
+func PostComment(comment model.NewComment) {
+
+	pingDB()
+
+	coll := Client.Database("owlint").Collection("comment")
+	result, err := coll.InsertOne(context.TODO(), comment)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(result)
+}
+
+// pingDB try to ping the db - if no response then the request will be canceled
+func pingDB() {
+	// Ping the primary
+	if err := Client.Ping(context.TODO(), readpref.Primary()); err != nil {
+		panic(err)
+	}
+	fmt.Println("Successfully connected and pinged.")
 }
