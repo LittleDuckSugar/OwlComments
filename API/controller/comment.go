@@ -48,6 +48,11 @@ func PostComment(c *gin.Context) {
 				c.String(http.StatusBadRequest, "")
 			} else {
 
+				// If targetId is not specified in post body then use the targetId from URL
+				if input.TargetId == "" {
+					input.TargetId = targetId
+				}
+
 				if targetId == input.TargetId {
 					// Traduction of comments
 					if input.TextEn == "" {
@@ -75,12 +80,12 @@ func PostComment(c *gin.Context) {
 					c.JSON(http.StatusCreated, input)
 				} else {
 					fmt.Println("targetId is not the same in the path than in the request")
+					c.String(http.StatusBadRequest, "")
 				}
 			}
 			return
 		}
 	}
-
 	fmt.Println("No matching targets")
-
+	c.String(http.StatusNotFound, "")
 }

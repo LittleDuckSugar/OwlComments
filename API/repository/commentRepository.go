@@ -38,10 +38,6 @@ func GetCommentByTargetId(targetId string) (bool, []model.Comment) {
 
 	cursor, err := coll.Find(context.TODO(), bson.D{{"id", targetId}})
 	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			// This error means your query did not match any documents.
-			return false, []model.Comment{}
-		}
 		panic(err)
 	}
 
@@ -49,6 +45,10 @@ func GetCommentByTargetId(targetId string) (bool, []model.Comment) {
 
 	if err = cursor.All(context.TODO(), &results); err != nil {
 		panic(err)
+	}
+
+	if len(results) == 0 {
+		return false, []model.Comment{}
 	}
 
 	for pass, comment := range results {
@@ -67,10 +67,6 @@ func getReplies(Id string) []model.Comment {
 
 	cursor, err := coll.Find(context.TODO(), bson.D{{"targetId", Id}})
 	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			// This error means your query did not match any documents.
-			return []model.Comment{}
-		}
 		panic(err)
 	}
 

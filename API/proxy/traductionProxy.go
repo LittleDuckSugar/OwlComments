@@ -13,6 +13,7 @@ import (
 
 var uriTraductionEndpoint string = "https://translate.argosopentech.com/translate"
 
+// PostTraduction ask a traduction of a string to the traduction API
 func PostTradution(toTranslate model.Traduction) string {
 	client := &http.Client{
 		Timeout: 3 * time.Second,
@@ -37,13 +38,6 @@ func PostTradution(toTranslate model.Traduction) string {
 			return textTranslated
 		}
 	}
-
-	// If tea poted
-	if resp.StatusCode == 418 {
-		textTranslated := PostTradution(toTranslate)
-		return textTranslated
-	}
-	fmt.Println(resp.StatusCode)
 
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)

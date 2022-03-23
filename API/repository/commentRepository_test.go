@@ -6,6 +6,7 @@ import (
 	"testing"
 )
 
+// TestGetComments test the return of the of the db when it is untouched
 func TestGetComments(t *testing.T) {
 	foundWant := true
 	commentWant := []model.Comment{

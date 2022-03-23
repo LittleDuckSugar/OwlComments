@@ -13,6 +13,7 @@ import (
 
 var uriBackEnd string = "https://faulty-backend.herokuapp.com/on_comment"
 
+// PostComment post received comment to falty_backend API
 func PostComment(comment model.CommentToPost) {
 	client := &http.Client{
 		Timeout: 12 * time.Second,
