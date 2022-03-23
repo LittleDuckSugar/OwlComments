@@ -1,5 +1,6 @@
 package model
 
+// Comment stores a comment informations
 type Comment struct {
 	Id          string    `json:"id"`
 	TextFr      string    `json:"textFr"`
@@ -10,6 +11,7 @@ type Comment struct {
 	Replies     []Comment `json:"replies"`
 }
 
+// NewComment stores new comment to make in db
 type NewComment struct {
 	Id          string `json:"id" bson:"id"`
 	TextFr      string `json:"textFr" bson:"textFr"`
