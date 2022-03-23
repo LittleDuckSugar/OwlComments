@@ -30,25 +30,32 @@ func init() {
 }
 
 // GetTarget return true if target exist, return false instead
-func GetCommentByTargetId(targetId string) (bool, model.Comment) {
+func GetCommentByTargetId(targetId string) (bool, []model.Comment) {
 
 	pingDB()
 
 	coll := Client.Database("owlint").Collection("comment")
 
-	var result model.Comment
-	err := coll.FindOne(context.TODO(), bson.D{{"id", targetId}}).Decode(&result)
+	cursor, err := coll.Find(context.TODO(), bson.D{{"id", targetId}})
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			// This error means your query did not match any documents.
-			return false, result
+			return false, []model.Comment{}
 		}
 		panic(err)
 	}
 
-	result.Replies = getReplies(result.Id)
+	var results []model.Comment
 
-	return true, result
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		panic(err)
+	}
+
+	for pass, comment := range results {
+		results[pass].Replies = getReplies(comment.Id)
+	}
+
+	return true, results
 }
 
 // getReplies return replies of a given Id
