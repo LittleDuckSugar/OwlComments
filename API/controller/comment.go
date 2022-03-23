@@ -14,7 +14,7 @@ import (
 	"github.com/rs/xid"
 )
 
-var fakeTargetsBase []string = []string{"User-kjh784fgevdhhdwhh7563", "Photo-bdgetr657434hfggrt8374", ""}
+var fakeTargetsBase []string = []string{"User-kjh784fgevdhhdwhh7563", "Photo-bdgetr657434hfggrt8374"}
 
 // GetComments return an array of comments matching an targetId
 func GetComments(c *gin.Context) {
